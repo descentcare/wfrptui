@@ -6,6 +6,7 @@ import (
     "fmt"
     "math/rand"
     models "github.com/descentcare/wfrptui/internal/models"
+    save "github.com/descentcare/wfrptui/internal/save"
     tea "github.com/charmbracelet/bubbletea"
     "github.com/charmbracelet/lipgloss"
     "github.com/charmbracelet/bubbles/table"
@@ -37,6 +38,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.characteristicsTable.Focus()
             }
         case "q", "ctrl+c":
+            if err := save.Save(m.char); err != nil {
+                panic(err)
+            }
             return m, tea.Quit
         case "+":
             m.char.Characteristics[m.characteristicsTable.SelectedRow()[1]].Advance(1)
@@ -77,6 +81,7 @@ func (m model) View() string {
 
 func main() {
     character := models.NewCharacter("John Doe")
+    save.Unload(&character, character.Name)
     columns := []table.Column{
         {Title: "Characteristic", Width: 15},
         {Title: "Short", Width: 5},

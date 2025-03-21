@@ -1,4 +1,4 @@
-package save
+package fsclient
 
 import (
     models "github.com/descentcare/wfrptui/internal/models"
@@ -16,7 +16,7 @@ func Save(character models.Character) error {
     if err != nil {
         return err
     }
-    f, err := os.Create(fmt.Sprintf("%s/%s.txt", sharedir, character.Name))
+    f, err := os.Create(fmt.Sprintf("%s/%s.json", sharedir, character.Name))
     defer f.Close()
     if err != nil {
         return err
@@ -29,16 +29,35 @@ func Save(character models.Character) error {
     return f.Sync()
 }
 
-func Unload(character *models.Character, name string) error {
+func Load(character *models.Character, name string) error {
     dir, err := getShareDir()
     if err != nil {
         return err
     }
-    data, err := os.ReadFile(dir + name + ".txt")
+    data, err := os.ReadFile(dir + name + ".json")
     if err != nil {
         return err
     }
     return json.Unmarshal(data, character)
+}
+
+func ScanSaves() ([]string, error) {
+    dir, err := getShareDir()
+    if err != nil {
+        return nil, err
+    }
+    entries, err := os.ReadDir(dir)
+    if err != nil {
+        return nil, err
+    }
+    saves := make([]string, 0)
+    for _, e := range entries {
+        if !e.IsDir() {
+            name := e.Name()
+            saves = append(saves, name[:len(name)-5])
+        }
+    }
+    return saves, nil
 }
 
 func makeShareDir() (string, error) {

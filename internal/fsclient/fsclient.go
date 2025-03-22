@@ -42,7 +42,7 @@ func Load(character *models.Character, name string) error {
 }
 
 func ScanSaves() ([]string, error) {
-    dir, err := getShareDir()
+    dir, err := makeShareDir()
     if err != nil {
         return nil, err
     }

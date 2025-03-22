@@ -1,11 +1,14 @@
 package tui
 
 import (
-    "fmt"
-    "github.com/charmbracelet/bubbles/list"
-    "github.com/charmbracelet/lipgloss"
-    tea "github.com/charmbracelet/bubbletea"
-    "github.com/descentcare/wfrptui/internal/fsclient"
+	"fmt"
+    "github.com/descentcare/wfrptui/internal/constants"
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/descentcare/wfrptui/internal/fsclient"
+	"github.com/descentcare/wfrptui/internal/models"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1,2)
@@ -35,7 +38,8 @@ func InitCharchoose() *Charchoose {
     d := list.NewDefaultDelegate()
     d.ShowDescription = false
     m := &Charchoose{ list.New(items, d, 0, 0) }
-    m.list.DisableQuitKeybindings()
+    //m.list.DisableQuitKeybindings()
+    m.list.KeyMap.Quit.SetEnabled(false)
     m.list.Title = "Choose or create a character"
     return m
 }
@@ -45,22 +49,37 @@ func (m Charchoose) Init() tea.Cmd {
 }
 
 func (m Charchoose) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    var cmds []tea.Cmd
     var cmd tea.Cmd
     switch msg := msg.(type) {
     case tea.KeyMsg:
-        switch msg.String() {
-        case "ctrl+c":
-            return m, tea.Quit
-        case "enter":
+        if key.Matches(msg, constants.Keymap.Enter) {
             selectedItem := m.list.SelectedItem().(item)
-            selectedItem.title
+            cmds = append(cmds, func () tea.Msg {
+                c := models.NewCharacter(selectedItem.title)
+                if err := fsclient.Load(&c, selectedItem.title); err != nil {
+                    panic(err)
+                }
+                return c
+            })
+        } else if key.Matches(msg, constants.Keymap.NewCharacter) {
+            fmt.Print("skhdajhfdsallfads")
+            cmds = append(cmds, func () tea.Msg {
+                fmt.Print("ERFTGYUHIJ")
+                c := models.NewCharacter(fmt.Sprintf("New_%d", len(m.list.Items())))
+                if err := fsclient.Save(c); err != nil {
+                    panic(err)
+                }
+                return c
+            })
         }
     case tea.WindowSizeMsg:
         h, v := docStyle.GetFrameSize()
         m.list.SetSize(msg.Width - h, msg.Height - v)
     }
     m.list, cmd = m.list.Update(msg)
-    return m, cmd
+    cmds = append(cmds, cmd)
+    return m, tea.Batch(cmds...)
 }
 
 func (m Charchoose) View() string {

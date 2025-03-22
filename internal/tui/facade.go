@@ -1,6 +1,7 @@
 package tui
 
 import (
+    "fmt"
     "github.com/descentcare/wfrptui/internal/models"
     "github.com/descentcare/wfrptui/internal/fsclient"
     "github.com/descentcare/wfrptui/internal/constants"
@@ -30,6 +31,11 @@ func (m Facade) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
             return m, tea.Quit
         }
+    case models.Character:
+        fmt.Print("FACADE")
+        m.Char = &msg
+        m.CharTab = NewCharacteristicsTabModel(m.Char)
+        m.CurrentTab = constants.Char
     }
     switch m.CurrentTab {
         case constants.Choose:
@@ -41,5 +47,11 @@ func (m Facade) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Facade) View() string {
+    switch m.CurrentTab {
+        case constants.Choose:
+            return m.ChooseList.View()
+        case constants.Char:
+            return m.CharTab.View()
+    }
     return ""
 }

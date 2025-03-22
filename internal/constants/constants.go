@@ -7,12 +7,17 @@ import (
 type keymap struct {
     QuitProgram key.Binding
     Enter key.Binding
+    NewCharacter key.Binding
 }
 
 var Keymap = keymap {
     QuitProgram: key.NewBinding(
         key.WithKeys("ctrl+c"),
         key.WithHelp("ctrl+c", "Quit program"),
+    ),
+    NewCharacter: key.NewBinding(
+        key.WithKeys("c"),
+        key.WithHelp("c", "New Character"),
     ),
     Enter: key.NewBinding(
         key.WithKeys("enter"),

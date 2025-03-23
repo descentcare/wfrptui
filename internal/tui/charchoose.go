@@ -48,7 +48,7 @@ func (m Charchoose) Init() tea.Cmd {
     return nil
 }
 
-func (m Charchoose) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Charchoose) Update(msg tea.Msg) (Charchoose, tea.Cmd) {
     var cmds []tea.Cmd
     var cmd tea.Cmd
     switch msg := msg.(type) {
